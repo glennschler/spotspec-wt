@@ -1,62 +1,70 @@
 # wt-aws-spotter
-Manage EC2 spot instances using webtasks
+Manage Amazon Elastic Compute Cloud (Amazon EC2) spot instances using webtask.io
 
-#####Secure EC2 IAM user credentials in a webtask.io
-As a proof of concept, create a webtask which gets the current spot price of a certain EC2 machine Instance Type. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
+####Get Started
+As a proof of concept, create a webtask which requests the current spot price of a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
 
 1. Create an EC2 IAM user following this [aws guide](http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_SettingUpUser.html#Using_CreateUser_console). Here are the quick steps:
-  * Sign in to the [AWS Management Console](https://console.aws.amazon.com/iam/) and open the IAM console
-  * In the navigation pane, choose **Users**, and then choose **Create New Users**
-  * Enter a user name. Select **Generate an access key**. Choose **Create**
-  * Once created, choose **Show User Security Credentials**. Save the creditials for the webtask. You will not have access to *this* secret access key again after you close
+  * Sign in to the [AWS Management Console](https://console.aws.amazon.com/iam/) and open the IAM console.
+  * In the navigation pane, choose **Users**, and then choose **Create New Users**.
+  * Enter a user name. Check **Generate an access key**, and choose **Create**.
+  * Once created, choose **Show User Security Credentials**. Save the credentials for the webtask. You will not have access to *this* secret access key again after you close.
 
-2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot history action. The following shows a good policy:
-  ```
+2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The following shows a good policy for this first goal:
+  ```json
   {
     "Version": "2012-10-17",
     "Statement": [
-      {
-        "Action": [
-          "ec2:DescribeSpotPriceHistory"
-        ],
-        "Effect": "Allow",
-        "Resource": "*",
-        "Condition": {
-          "Bool": { "aws:SecureTransport": "true" }
+    {
+      "Action": [ "ec2:DescribeSpotPriceHistory" ],
+      "Effect": "Allow",
+      "Resource": "*",
+      "Condition": {
+        "Bool": { "aws:SecureTransport": "true" },
+        "StringEquals": {
+          "ec2:Region": [ "us-east-1", "us-west-2" ]
         }
       }
-    ]
+    }]
   }
   ```
 
-3. If missed earlier, create and save new IAM user [access credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html#Using_CreateAccessKey)
+3. If missed earlier or using an existing IAM user, create new [access credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html#Using_CreateAccessKey). Save the credentials for the webtask.
 
-4. Install and initialize the [webtask.io CLI](https://webtask.io/cli).
+4. Install and initialize the webtask.io CLI. There are detailed instructions at https://webtask.io/cli.
 
-5. Create the webtask. Using this example, replace the {secret} in accessKeyId and secretAccessKey with the real IAM user's credentials.
-  * Anything following the --secrets parameter is encrypted by webtask.io with AES256-CBC
-  ```
-  # Set to where the webtask code exists
-  export WT_CODE=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master/wt-spotPricer.js
-  ```
+5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored, though represented as a url which can be executed as a webtask request in the future. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
+  * The EC2 IAM limit policy specified above is an additional level of protection, since it is does not allow actions which might incur AWS cost.
+  * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
+  * This example sets a single --secret option as named parameter with a JSON string value. Replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
+    ```bash
+    # Set to where the webtask code exists
+    export WT_CODE=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master/wt-spotPricer.js
 
-  * The optional exp=+10 parameter instructs the webtask to expire in 10 minutes
-  ```
-  export WT_URL=$(wt create $WT_CODE --exp=+10 --name ec2SpotTest \
-  --secret wtData='{ "accessKeyId": "{secret}", "secretAccessKey": "{secret}" }')
-  ```
-  ```
-  # Echo the previous commands output to view the webtask url
-  echo $WT_URL
-  ```
+    ```
+    ```bash
+    # Change the {secret} values to the real IAM credential values
+    export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}"}'
+    export WT_OPTS='--exp=+10 --name ec2SpotTest'
+    ```
+  * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes
+    ```bash
+    export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
+    ```
+    ```bash
+    # Echo the previous commands output to view the webtask request url
+    echo $WT_URL
+    ```
+    > $
+    > https://webtask.it.auth0.com/api/run/{wt-container}/{wt-name}}?webtask_no_cache=1
 
-6. Now the webtask is available to execute remotely as a microservice. Make the request using the url which was output by the previous ```wt create```
+6. Now the webtask request is available to execute remotely as a microservice.
 
-  * Replace the arguments for "region" and "type" as needed
-  * Request the URL which was created during the previous step
+  * Replace the post data JSON arguments "region" and "type" as needed
+  * Request the WT_URL which was created during the previous ```wt create``` step
   * To format the output, optionally pipe the output to a python command as demonstrated here
-  ```
+  ```bash
   curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-1","type":"m3.medium"}' | python -mjson.tool
+  -X POST -d '{"region":"us-west-2","type":"m3.medium"}' | python -mjson.tool
   ```
