@@ -37,21 +37,25 @@ As a proof of concept, create a webtask which requests the current spot price of
   * The EC2 IAM limit policy specified above is an additional level of protection, since it is does not allow actions which might incur AWS cost.
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   * This example sets a single --secret option as named parameter with a JSON string value. Replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
+
     ```bash
     # Set to where the webtask code exists. This is a file in this repository
     export WT_GITHUB=https://raw.githubusercontent.com/glennschler
     export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-spotPricer.js
     ```
+
     ```bash
     # Change the {secret} values to the real IAM credential values
     export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}"}'
     ```
+
   * Call the webtask.io CLI ```wt create```
   * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes
     ```bash
     export WT_OPTS='--exp=+10 --name ec2SpotTest'
     export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
     ```
+
     ```bash
     # Echo the previous output to view the created webtask token url
     echo $WT_URL
