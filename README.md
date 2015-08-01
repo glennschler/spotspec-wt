@@ -34,7 +34,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 4. Install and initialize the webtask.io CLI. There are detailed instructions at https://webtask.io/cli.
 
 5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored, though represented as a url which can be executed as a webtask request in the future. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
-  * The EC2 IAM limit policy specified above is an additional level of protection, since it is does not allow actions which might incur AWS cost.
+  * The EC2 IAM policy specified above is an additional level of protection, since it is does not allow actions which might incur AWS cost.
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   ```bash
   # Set to where the webtask code exists. This is a file in this repository
