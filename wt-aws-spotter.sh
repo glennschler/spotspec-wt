@@ -18,8 +18,7 @@ fi
 export WT_SECRET=
 export WT_URL=
 export WT_GITHUB=https://raw.githubusercontent.com/glennschler
-export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-spotPricer.js
-export WT_CODE=./wt-spotPricer.js
+export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-aws-spotter.js
 export WT_SECRET='{"accessKeyId":"'$1'","secretAccessKey":"'$2'"}'
 export WT_OPTS='--exp=+10 --name ec2SpotTest'
 export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)

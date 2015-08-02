@@ -38,25 +38,29 @@ As a proof of concept, create a webtask which requests the current spot price of
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   ```bash
   # Set to where the webtask code exists. This is a file in this repository
-  export WT_GITHUB=https://raw.githubusercontent.com/glennschler
-  export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-spotPricer.js
+  $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler
+  $ export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-aws-spotter.js
   ```
 
   * In this JSON string replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
   ```bash
-  export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}"}'
+  $ export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}"}'
   ```
 
   * Call the webtask.io CLI command ```wt create```.
   * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes.
   * The above JSON WT_SECRET is sent using the wt --secret parameter.
   ```bash
-  export WT_OPTS='--exp=+10 --name ec2SpotTest'
-  export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
+  $ export WT_OPTS='--exp=+10 --name ec2SpotTest'
+  $ export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
   ```
   ```bash
   # Echo the previous output to view the created webtask token url
-  echo $WT_URL
+  $ echo $WT_URL
+  ```
+  >
+  ```bash
+  https://webtask.it.auth0.com/api/run/{wt-container-name}/ec2SpotTest2?webtask_no_cache=1
   ```
 
 6. Now the webtask request is available to execute remotely as a microservice.
@@ -65,7 +69,51 @@ As a proof of concept, create a webtask which requests the current spot price of
   * Request the WT_URL which was created during the previous ```wt create``` step.
   * To format the output, optionally pipe the output to a python command as demonstrated here.
   ```bash
-  curl -s $WT_URL \
+  $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
   -X POST -d '{"region":"us-west-2","type":"m3.medium"}' | python -mjson.tool
+  ```
+  >
+  ```bash
+  [
+    {
+        "AvailabilityZone": "us-west-2b",
+        "InstanceType": "m3.medium",
+        "ProductDescription": "Linux/UNIX",
+        "SpotPrice": "0.008400",
+        "Timestamp": "2015-08-02T22:49:09.000Z"
+    },
+    {
+        "AvailabilityZone": "us-west-2a",
+        "InstanceType": "m3.medium",
+        "ProductDescription": "Linux/UNIX",
+        "SpotPrice": "0.008100",
+        "Timestamp": "2015-08-02T22:30:01.000Z"
+    },
+    {
+        "AvailabilityZone": "us-west-2c",
+        "InstanceType": "m3.medium",
+        "ProductDescription": "Linux/UNIX",
+        "SpotPrice": "0.008400",
+        "Timestamp": "2015-08-02T12:33:39.000Z"
+    }
+  ]
+  ```
+
+  * Try again with a region that is not defined in the IAM policy. It should fail.
+  ```bash
+  $ curl -s $WT_URL \
+  -H "Content-Type: application/json" \
+  -X POST -d '{"region":"us-west-1","type":"m3.medium"}' | python -mjson.tool
+  ```
+  >
+  ```bash
+  {
+    "code": 400,
+    "details": "UnauthorizedOperation: You are not authorized to perform this operation.",
+    "error": "Script returned an error.",
+    "message": "You are not authorized to perform this operation.",
+    "name": "UnauthorizedOperation",
+    "stack": "UnauthorizedOperation: You are not authorized to perform this operation.\n    at Request.extractError...
+  }
   ```
