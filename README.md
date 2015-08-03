@@ -33,7 +33,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 
 4. Install and initialize the webtask.io CLI. There are detailed instructions at https://webtask.io/cli.
 
-5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored, though represented as a url which can be executed as a webtask request in the future. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
+5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored. This create command will return a url which represents the new webtask token. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
   * The EC2 IAM policy specified above is an additional level of protection, since it does not allow actions which might incur AWS cost.
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   ```bash
@@ -51,7 +51,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes.
   * The above JSON $WT_SECRET is sent using the wt --secret parameter.
   ```bash
-  $ export WT_OPTS='--exp=+10 --name ec2SpotTest'
+  $ export WT_OPTS='--exp=+10'
   $ export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
   ```
   ```bash
@@ -60,7 +60,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```
   >
   ```bash
-  https://webtask.it.auth0.com/api/run/{wt-container-name}/ec2SpotTest2?webtask_no_cache=1
+  https://webtask.it.auth0.com/api/run/{container}/{jt-name}?webtask_no_cache=1
   ```
 
 6. Now the webtask request is available to execute remotely as a microservice.
