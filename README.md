@@ -34,7 +34,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 4. Install and initialize the webtask.io CLI. There are detailed instructions at https://webtask.io/cli.
 
 5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored, though represented as a url which can be executed as a webtask request in the future. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
-  * The EC2 IAM policy specified above is an additional level of protection, since it is does not allow actions which might incur AWS cost.
+  * The EC2 IAM policy specified above is an additional level of protection, since it does not allow actions which might incur AWS cost.
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   ```bash
   # Set to where the webtask code exists. This is a file in this repository
@@ -49,7 +49,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 
   * Call the webtask.io CLI command ```wt create```.
   * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes.
-  * The above JSON WT_SECRET is sent using the wt --secret parameter.
+  * The above JSON $WT_SECRET is sent using the wt --secret parameter.
   ```bash
   $ export WT_OPTS='--exp=+10 --name ec2SpotTest'
   $ export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
@@ -66,7 +66,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 6. Now the webtask request is available to execute remotely as a microservice.
 
   * Replace the post data JSON arguments "region" and "type" as needed.
-  * Request the WT_URL which was created during the previous ```wt create``` step.
+  * Request the $WT_URL which was created during the previous ```wt create``` step.
   * To format the output, optionally pipe the output to a python command as demonstrated here.
   ```bash
   $ curl -s $WT_URL \
