@@ -117,3 +117,13 @@ As a proof of concept, create a webtask which requests the current spot price of
     "stack": "UnauthorizedOperation: You are not authorized to perform this operation.\n    at Request.extractError...
   }
   ```
+
+7. Execute all the above steps using one helper bash script.
+```bash
+$ export WT_GITHUB=https://raw.githubusercontent.com/glennschler
+$ curl -O $WT_GITHUB/wt-aws-spotter/master/wt-aws-spotter.sh
+```
+```bash
+# replace {accessKeyId} {secretAccessKey} with the real secrets
+$ sh wt-aws-spotter.sh {accessKeyId} {secretAccessKey} us-west-2 m3.large
+```
