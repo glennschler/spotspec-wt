@@ -38,8 +38,9 @@ As a proof of concept, create a webtask which requests the current spot price of
   * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
   ```bash
   # Set to where the webtask code exists. This is a file in this repository
-  $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler
-  $ export WT_CODE=$WT_GITHUB/wt-aws-spotter/master/wt-aws-spotter.js
+  # change to WT_GITHUB=. if reading this as a local repo
+  $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
+  $ export WT_CODE=$WT_GITHUB/wt-aws-spotter.js
   ```
 
   * In this JSON string replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
@@ -120,8 +121,9 @@ As a proof of concept, create a webtask which requests the current spot price of
 
 7. Execute all the above steps using one helper bash script.
 ```bash
-$ export WT_GITHUB=https://raw.githubusercontent.com/glennschler
-$ curl -O $WT_GITHUB/wt-aws-spotter/master/wt-aws-spotter.sh
+# Change to WT_GITHUB=. if reading this as a local repo
+$ export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
+$ curl -O $WT_GITHUB/wt-aws-spotter.sh
 ```
 ```bash
 # replace {accessKeyId} {secretAccessKey} with the real secrets
