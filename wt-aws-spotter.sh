@@ -29,7 +29,11 @@ echo "instance-type set to $WT_INSTANCE_TYPE"
 # just in case there are old var values in the shell
 export WT_SECRET=
 export WT_URL=
-export WT_CODE=./wt-aws-spotter.js
+
+# Set to where the webtask code exists. This is a file in this repository
+# change to WT_GITHUB=. if all the repository files are local
+export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
+export WT_CODE=$WT_GITHUB/wt-aws-spotter.js
 export WT_SECRET='{"accessKeyId":"'$1'","secretAccessKey":"'$2'"}'
 export WT_OPTS='--exp=+10'
 export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
