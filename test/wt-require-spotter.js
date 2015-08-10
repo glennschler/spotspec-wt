@@ -39,14 +39,14 @@ module.exports = function(context, cb) {
 
   // EC2 IAM user credentials must exist
   if (!awsCreds || !awsCreds.accessKeyId || !awsCreds.secretAccessKey) {
-    return cb(new Error('EC2 secrets are missing'));
+    cb(new Error('EC2 secrets are missing'));
+    return;
   }
 
   if (typeof runArgs === 'undefined') {
-    return cb(new Error('AwsSpotter arguments are missing'));
+    cb(new Error('AwsSpotter arguments are missing'));
+    return;
   }
-
-  logInfo(typeof runArgs, runArgs);
 
   // The EC2 region is sent at execution time. Merge with the EC2 credentials
   awsCreds.region = !runArgs ? '' : runArgs.region;
@@ -66,16 +66,19 @@ module.exports = function(context, cb) {
     }
 
     if (spotter !== null) {
-      spotPrices(spotter);
+      spotPrices(spotter, runArgs);
     }
   });
 
   // called back after the remote module is loaded
-  var spotPrices = function (spotter) {
+  var spotPrices = function (spotter, runArgs) {
+
+    console.log ('args', runArgs);
+
     var priceOpts = {
       type: runArgs.type || 'm3.medium',
       product: runArgs.product || 'Linux/UNIX',
-      dryRun: runArgs.dryRun
+      DryRun: runArgs.dryRun
     };
 
 
@@ -86,26 +89,27 @@ module.exports = function(context, cb) {
     spotter.spotPrices(priceOpts);
   }
 
-  // fired when the spotPrices request is complete
-  var onPrices = function onPrices(pricesData, err) {
+  // handler when spotPrices request is complete
+  var onPrices = function (pricesData, err) {
     if (pricesData === null) {
-      returnError(pricesData);
+      returnError('price err:\n', err);
     }
     else {
-      return cb(null, pricesData);
+      logInfo('prices event fired:\n', pricesData);
+      cb(pricesData);
     }
   };
 
   // wrap the error
-  var returnError = function() {
+  var returnError = function () {
     errMsg = Util.format.apply(this, arguments);
     logInfo('Error:', Util.format.apply(this, arguments));
-    return cb(errMsg);
+    cb(errMsg);
   }
 };
 
 // helper to parse json
-var parseJson = function(jsonStr) {
+var parseJson = function (jsonStr) {
   try {
     jsonStr = JSON.parse(jsonStr);
   }
