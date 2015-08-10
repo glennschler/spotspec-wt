@@ -1,3 +1,6 @@
+/*
+* @module AwsSpotter-webtask
+*/
 const https = require('https');
 const Util = require('util');
 const vm = require('vm');
@@ -6,6 +9,8 @@ const concat = require('concat-stream');
 
 /**
 * Proof of concept, require a remote module
+* Since webtask.io does not have this Node module in their private npm cache,
+* it must be manually loaded at run time. Probably not very efficient.
 */
 var remoteRequire = function (callback) {
   var url = 'https://raw.githubusercontent.com/glennschler/aws-spotter-node/master/index.js';
@@ -23,6 +28,8 @@ var remoteRequire = function (callback) {
   });
 }
 
+
+// The webtask.io entry-point
 module.exports = function(context, cb) {
   var awsCreds = context.data.wtData; // Secure data set during the 'wt create'
   awsCreds = parseJson(awsCreds);
@@ -45,7 +52,7 @@ module.exports = function(context, cb) {
   awsCreds.region = !runArgs ? '' : runArgs.region;
   var instanceType = !runArgs ? '' : runArgs.type;
 
-  // Fetch the AwsSpotter module and then make the the call
+  // Fetch the AwsSpotter module and then make an AwsSpotter method call
   remoteRequire(function (requiredClass) {
     const AwsSpotter = requiredClass;
 
@@ -63,6 +70,7 @@ module.exports = function(context, cb) {
     }
   });
 
+  // called back after the remote module is loaded
   var spotPrices = function (spotter) {
     var priceOpts = {
       type: runArgs.type || 'm3.medium',
@@ -78,6 +86,7 @@ module.exports = function(context, cb) {
     spotter.spotPrices(priceOpts);
   }
 
+  // fired when the spotPrices request is complete
   var onPrices = function onPrices(pricesData, err) {
     if (pricesData === null) {
       returnError(pricesData);

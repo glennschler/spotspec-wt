@@ -40,7 +40,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   # Set to where the webtask code exists. This is a file in this repository
   # change to WT_GITHUB=. if reading this as a local repo
   $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
-  $ export WT_CODE=$WT_GITHUB/wt-aws-spotter.js
+  $ export WT_CODE=$WT_GITHUB/test/wt-require-spotter.js
   ```
 
   * In this JSON string replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
@@ -105,7 +105,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```bash
   $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-1","type":"m3.medium"}' | python -mjson.tool
+  -X POST -d '{"region":"us-west-1","type":"m3.medium","dryRun":"false","isLogging"}' | python -mjson.tool
   ```
   >
   ```bash
@@ -123,7 +123,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 ```bash
 # Change to WT_GITHUB=. if reading this as a local repo
 $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
-$ curl -O $WT_GITHUB/wt-aws-spotter.sh
+$ curl -O $WT_GITHUB/test/wt-aws-spotter.sh
 ```
 ```bash
 # replace {accessKeyId} {secretAccessKey} with the real secrets
