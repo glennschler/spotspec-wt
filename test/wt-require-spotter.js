@@ -116,6 +116,6 @@ var parseJson = function(jsonStr) {
 }
 
 // wrap for future 3rd party logger
-var logInfo = function (message, meta) {
-  console.info(message, meta);
+var logInfo = function () {
+  console.info(Util.format.apply(this, arguments));
 }

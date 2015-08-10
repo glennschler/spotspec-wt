@@ -72,7 +72,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```bash
   $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-2","type":"m3.medium"}' | python -mjson.tool
+  -X POST -d '{"region":"us-west-2","type":"m3.medium","dryRun":"false","isLogging":"true"}' | python -mjson.tool
   ```
   >
   ```bash
@@ -105,7 +105,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```bash
   $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-1","type":"m3.medium","dryRun":"false","isLogging"}' | python -mjson.tool
+  -X POST -d '{"region":"us-west-1","type":"m3.medium","dryRun":"false","isLogging":"true"}' | python -mjson.tool
   ```
   >
   ```bash
