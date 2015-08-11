@@ -36,6 +36,8 @@ module.exports = function(context, cb) {
 
   // These run time execution arguments are sent as JSON postdata
   var runArgs = context.body;
+  var parsedArgs = parseJson(runArgs);
+  if (parsedArgs !== null) runArgs = parsedArgs;
 
   // EC2 IAM user credentials must exist
   if (!awsCreds || !awsCreds.accessKeyId || !awsCreds.secretAccessKey) {
@@ -72,13 +74,12 @@ module.exports = function(context, cb) {
 
   // called back after the remote module is loaded
   var spotPrices = function (spotter, runArgs) {
-
     console.log ('args', runArgs);
 
     var priceOpts = {
       type: runArgs.type || 'm3.medium',
       product: runArgs.product || 'Linux/UNIX',
-      DryRun: runArgs.dryRun
+      dryRun: runArgs.dryRun
     };
 
 
@@ -96,7 +97,7 @@ module.exports = function(context, cb) {
     }
     else {
       logInfo('prices event fired:\n', pricesData);
-      cb(pricesData);
+      cb(null, pricesData);
     }
   };
 
