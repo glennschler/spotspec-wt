@@ -34,8 +34,8 @@ export WT_URL=
 
 # Set to where the webtask code exists. This is a file in this repository
 # change to WT_GITHUB=. if all the repository files are local
-#export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
-export WT_GITHUB=.
+export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
+#export WT_GITHUB=.
 export WT_CODE=$WT_GITHUB/test/wt-spotter.js
 export WT_SECRET='{"accessKeyId":"'$1'","secretAccessKey":"'$2'","serialNumber":"'$WT_SERIALNUMBER'"}'
 export WT_OPTS='--exp=+10'
