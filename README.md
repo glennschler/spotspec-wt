@@ -40,7 +40,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   # Set to where the webtask code exists. This is a file in this repository
   # change to WT_GITHUB=. if reading this as a local repo
   $ export WT_GITHUB=https://raw.githubusercontent.com/glennschler/wt-aws-spotter/master
-  $ export WT_CODE=$WT_GITHUB/test/wt-require-spotter.js
+  $ export WT_CODE=$WT_GITHUB/test/wt-spotter.js
   ```
 
   * In this JSON string replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials.
@@ -72,7 +72,8 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```bash
   $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-2","type":"m3.medium","dryRun":"false","isLogging":"true"}' | python -mjson.tool
+  -X POST -d '{"construct":{"keys":{"accessKeyId":"","secretAccessKey":"","region":"us-west-1"},"upgrades":{"serialNumber":"","tokenCode":""}},'\
+  '"attributes":{"type":"m3.medium","dryRun":"false","isLogging":"true"}}' | python -mjson.tool
   ```
   >
   ```bash
@@ -105,7 +106,8 @@ As a proof of concept, create a webtask which requests the current spot price of
   ```bash
   $ curl -s $WT_URL \
   -H "Content-Type: application/json" \
-  -X POST -d '{"region":"us-west-1","type":"m3.medium","dryRun":"false","isLogging":"true"}' | python -mjson.tool
+  -X POST -d '{"construct":{"keys":{"accessKeyId":"","secretAccessKey":"","region":"us-west-1"},"upgrades":{"serialNumber":"","tokenCode":""}},'\
+  '"attributes":{"type":"m3.medium","dryRun":"false","isLogging":"true"}}' | python -mjson.tool
   ```
   >
   ```bash
