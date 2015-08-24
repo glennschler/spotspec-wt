@@ -1,24 +1,36 @@
+/**
+* This is hand built Bootstrap for a webtask.io webtask
+* 1st attempt used [WebPack]{@link https://webpack.github.io/ to create a
+* similar js bundle file, though was not enough. So that webpack bundle output
+* was used as a template to  create this file.
+* Next need to automate a solution using webpack properly or use browserfy or
+* [require.js]{@link http://requirejs.org/docs/node.html}
+* Goal is to bundle up a private or local node module to be used by node.js
+* instance in a webtask.io container.
+* Webtask.io already provides access to core nodejs and many popular npm
+* repositories, so those do not need to be replaced/transformed.
+*
+*/
 /******/ module.exports = (function WebtaskBootstrap(modules) { // webtask.io.Bootstrap
 /******/
 /******/ 	// The require function
 /******/ 	function __wt_require__(moduleId) {
 /******/
-/******/    // create the module cahce if it does not exist
+/******/    // create the module cache if it does not exist
 /******/    if (typeof installedModules === 'undefined') {
 /******/      installedModules = []
 /******/    }
 /******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
+/******/    // Check if module is in cache
+/******/    if(installedModules[moduleId])
+/******/    	return installedModules[moduleId].exports;
 /******/
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
-/******/ 		};
-/******/
+/******/    // Create a new module (and put it into the cache)
+/******/    var module = installedModules[moduleId] = {
+/******/    	exports: {},
+/******/    	id: moduleId,
+/******/    	loaded: false
+/******/    };
 /******/
 /******/    // Execute the module function only once!
 /******/    modules[moduleId].call(module.exports, module, module.exports,
@@ -33,7 +45,6 @@
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __wt_require__(0);
-
 /******/ }) // packed by __wt_require__
 /******/ ([
 /*** wt_packed [0]
@@ -48,16 +59,16 @@ const AwsSpotter = __wt_require__(1)
 const Const = __wt_require__(2).Const
 const Intern = __wt_require__(2).Intern
 
+var sessionData = {};  // for webtasks that re-use this module on a second request
+
 /**
-* The webtask.io entry point
+* The webtask.io module export
 */
-var xports = function(context, cb) {
+module.exports = function(context, cb) {
   if (!context.hasOwnProperty('data')) {
-    console.log('Missing Webtask.io create data')
-    return
+    return cb(new Error('Missing Webtask.io create data'))
   } else if (!context.hasOwnProperty('body')) {
-    console.log('Missing Webtask.io request body')
-    return
+    return cb (new Error('Missing Webtask.io request body'))
   }
 
   var wtSecrets = context.data.wtData; // Secure data set during the 'wt create'
@@ -69,22 +80,27 @@ var xports = function(context, cb) {
 
   // EC2 IAM user credentials must exist
   if (!wtSecrets || !wtSecrets.accessKeyId || !wtSecrets.secretAccessKey) {
-    cb(new Error('EC2 secrets are missing'));
-    return;
+    return cb(new Error('EC2 secrets are missing'));
   }
 
   if (typeof runArgs === 'undefined') {
-    cb(new Error('AwsSpotter arguments are missing'));
-    return;
+    return cb(new Error('AwsSpotter arguments are missing'));
   }
 
   // the two json argumets sent in the run args
   var construct = runArgs.construct
   var attributes = runArgs.attributes
 
-  // Merge in from the secrets
-  construct.keys.accessKeyId = wtSecrets.accessKeyId
-  construct.keys.secretAccessKey = wtSecrets.secretAccessKey
+  if (construct.hasOwnProperty('keys')) {
+    // Merge in from the secrets
+    construct.keys.accessKeyId = wtSecrets.accessKeyId
+    construct.keys.secretAccessKey = wtSecrets.secretAccessKey
+  }
+
+  if (wtSecrets.hasOwnProperty('serialNumber') &&
+      construct.hasOwnProperty('upgrade')) {
+    construct.upgrade.serialNumber = wtSecrets.serialNumber
+  }
 
   test(construct, attributes, cb)
 }
@@ -92,15 +108,18 @@ var xports = function(context, cb) {
 // helper to parse json
 var parseJson = function (jsonStrIn) {
   var jsonStrOut
+
   try {
     jsonStrOut = JSON.parse(jsonStrIn);
   } catch (parseError) {
-    try {
-      jsonStrOut = JSON.parse(JSON.stringify(jsonStrIn))
-    } catch (parseError) {
-      jsonStrOut = null;
-    }
+    jsonStrOut = null
   }
+
+  if (jsonStrOut === null) {
+    // try again after making it a string. Maybe it already was json
+    jsonStrOut = parseJson(JSON.stringify(jsonStrIn))
+  }
+
   return jsonStrOut;
 }
 
@@ -111,7 +130,21 @@ var logInfo = function () {
 
 // initialize the AWS service
 var test = function (construct, attributes, cb) {
-  var spotter = new AwsSpotter(construct, attributes.isLogging)
+  var spotter
+
+  // If webtask.io is still using the same recent container
+  if (sessionData.hasOwnProperty('sessionSpotter') &&
+      construct.reusePastSession) {
+    spotter = sessionData.sessionSpotter.spotter
+    console.log('reusing session spotter: ', true)
+
+    // send another Initialized event to continue
+    Intern.emitNextTick.call(spotter, Const.EVENT_INITIALIZED,
+        null, { state: Const.STATE_READY })
+  } else {
+    spotter = new AwsSpotter(construct, attributes.isLogging)
+    sessionData.sessionSpotter = { 'spotter': spotter }
+  }
 
   // the event handler
   spotter.once(Const.EVENT_INITIALIZED, function onInitialize (err, initData) {
@@ -146,50 +179,7 @@ var test = function (construct, attributes, cb) {
     spotter.spotPrices(priceOpts)
   }
 }
-
-/**
-* The webtask.io module export
-*/
-module.exports = xports
-
-if (!module.hasOwnProperty('id')) {
-  return  // This must be a webtask. It will be called from webtask.io
-}
-
-// Test #1
-var context = {
-  data: {
-    wtData: {'accessKeyId': 'HELLO', 'secretAccessKey': 'WORLD'}
-  },
-  body: {
-    construct: {
-      keys: {
-        'accessKeyId':'',
-        'secretAccessKey':'',
-        'region':'us-east-1'
-      },
-      upgrades: {
-        'serialNumber':'',
-        'tokenCode':''
-      }
-    },
-    attributes: {
-      'type': 'm3.medium',
-      'dryRun': true,
-      'isLogging': true
-    }
-  }
-}
-
-/**
-* To test outside of webtest.io
-* Test #1
-*/
-xports(context, function cb(err, data) {
-  console.log ('cb: ', 'err: ', err, ', data: ', data)
-})
-
-},
+},  // module end
 /*** wt_packed [1]
 ****/
 function AwsSpotter_m(module, exports, __wt_require__) {
