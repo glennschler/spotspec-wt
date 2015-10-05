@@ -1,16 +1,10 @@
 var path = require('path')
 var fs = require('fs')
+var webpack = require('webpack')
 
 var nodeModules = {}
-fs.readdirSync('node_modules')
-  .filter(function (x) {
-    return ['.bin'].indexOf(x) === -1
-  })
-  .forEach(function (mod) {
-    nodeModules[mod] = 'commonjs ' + mod
-  })
 
-fs.readdirSync('../node_modules')
+fs.readdirSync(path.join(__dirname, './node_modules/awsspotter/node_modules'))
   .filter(function (x) {
     return ['.bin'].indexOf(x) === -1
   })
@@ -19,13 +13,20 @@ fs.readdirSync('../node_modules')
   })
 
 var wtName = 'wt-spotter'
+var libDir = path.join(__dirname, 'lib')
+var buildDir = path.join(__dirname, 'build')
 module.exports = {
-  entry: './lib/' + wtName + '.js',
+  entry: path.join(libDir, wtName + '.js'),
   target: 'node',
   output: {
-    path: path.join(__dirname, 'lib'),
+    path: buildDir,
     filename: wtName + '-packed.js'
   },
+  plugins: [
+    // prepend the entire output text with this text
+    new webpack.BannerPlugin('module.exports =',
+      { raw: true, entryOnly: false })
+  ],
   module: {
   },
   externals: nodeModules
