@@ -1,0 +1,35 @@
+{
+  "name": "spotspec-wt",
+  "version": "0.0.1",
+  "description": "webtask launching of aws spot instances",
+  "main": "./lib/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glennschler/spotspec-wt.git"
+  },
+  "keywords": [
+    "aws",
+    "webtask.io",
+    "microservice",
+    "spot",
+    "cloud-init"
+  ],
+  "author": "glenn schlereth",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/glennschler/spotspec-wt/issues"
+  },
+  "homepage": "https://github.com/glennschler/spotspec-wt#readme",
+  "dependencies": {
+    "babel": "^6.1.18",
+    "spotspec": "^0.0.5",
+    "webpack": "^1.12.6",
+    "wt-cli": "^1.1.2"
+  }
+}

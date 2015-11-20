@@ -29,8 +29,6 @@ As a proof of concept, create a webtask which requests the current spot price of
   }
   ```
 
-3. If missed earlier or using an existing IAM user, create new [access credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html#Using_CreateAccessKey). Save the credentials for the webtask.
-
 4. Install and initialize the webtask.io CLI. There are detailed instructions at https://webtask.io/cli.
 
 5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored. This create command will return a url which represents the new webtask token. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
