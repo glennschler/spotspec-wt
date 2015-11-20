@@ -1,7 +1,10 @@
 # wt-aws-spotter
 Manage Amazon Elastic Compute Cloud (Amazon EC2) spot instances using webtask.io
 
-####Get Started
+####  * warning * 
+This readme is outdated. The quick instuctions are to `npm -g install webpack` and then run `webpack` from the root of this repository. The resulting `build\wt-spotter-packed.js` is what should be used when calling `wt create`. Below is for historical reference.
+
+#### Get Started
 As a proof of concept, create a webtask which requests the current spot price of a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
 
 1. Create an EC2 IAM user following this [aws guide](http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_SettingUpUser.html#Using_CreateUser_console). Here are the quick steps:
