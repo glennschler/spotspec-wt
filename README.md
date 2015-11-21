@@ -1,11 +1,11 @@
-# wt-aws-spotter
+# spotspec-wt
 Manage Amazon Elastic Compute Cloud (Amazon EC2) spot instances using webtask.io
 
-####  * warning *
-This readme is outdated. The quick instructions are
+####  * * * warning * * *
+This readme is a work in progress. The quick instructions are below
 
 ```
-git clone https://github.com/glennschler/wt-aws-spotter.git
+git clone https://github.com/glennschler/spotspec-wt.git
 npm install
 
 # The resulting `build\wt-spotter-packed.js` is file to be used when calling wt-create
@@ -13,7 +13,7 @@ npm run webpack
 ```
 
 #### Get Started
-As a proof of concept, create a webtask which requests the current spot price of a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
+As a proof of concept, create a webtask which requests the launches a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
 
 1. Create an EC2 IAM user following this [aws guide](http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_SettingUpUser.html#Using_CreateUser_console). Here are the quick steps:
   * Sign in to the [AWS Management Console](https://console.aws.amazon.com/iam/) and open the IAM console.
@@ -21,7 +21,7 @@ As a proof of concept, create a webtask which requests the current spot price of
   * Enter a user name. Check **Generate an access key**, and choose **Create**.
   * Once created, choose **Show User Security Credentials**. Save the credentials for the webtask. You will not have access to *this* secret access key again after you close.
 
-2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The spotspec README shows a good policy. This is a shorter example:
+2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The [spotspec](https://github.com/glennschler/spotspec) README shows a good policy. This is a shorter example:
   ```json
   {
     "Version": "2012-10-17",
@@ -43,7 +43,7 @@ As a proof of concept, create a webtask which requests the current spot price of
 4. NPM install command has already installed. Now initialize, if not already.
   * There are detailed instructions at https://webtask.io/cli.
   ```
-  $ npm run wt-init
+  npm run wt-init
   ```
 
 5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored. This create command will return a url which represents the new webtask token. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
