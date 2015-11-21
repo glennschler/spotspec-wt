@@ -7,7 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack",
+    "wt-create": "export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)",
+    "wt-init": "wt init"
   },
   "repository": {
     "type": "git",
@@ -28,7 +31,9 @@
   "homepage": "https://github.com/glennschler/spotspec-wt#readme",
   "dependencies": {
     "babel": "^6.1.18",
-    "spotspec": "^0.0.5",
+    "spotspec": ">=0.0.6"
+  },
+  "devDependencies": {
     "webpack": "^1.12.6",
     "wt-cli": "^1.1.2"
   }
