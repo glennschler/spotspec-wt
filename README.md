@@ -7,13 +7,21 @@ This readme is a work in progress. The quick instructions are below
 ```
 git clone https://github.com/glennschler/spotspec-wt.git
 npm install
-
-# The resulting `build\wt-spotter-packed.js` is file to be used when calling wt-create
-npm run webpack
 ```
 
 #### Get Started
-As a proof of concept, create a webtask which requests the launches a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
+As a proof of concept, create a webtask which launches a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
+
+1. Webpack the `./lib/wt-spotter.js` to a single file which is required by webtask.io. The resulting `build\wt-spotter-packed.js` is file to be used when calling wt-create.
+  ```
+  npm run webpack
+  ```
+
+1. NPM install command has already installed all dependencies locally. Now initialize wt-cli, if it has not been done in the past.
+  * There are detailed instructions at https://webtask.io/cli.
+  ```
+  npm run wt-init
+  ```
 
 1. Create an EC2 IAM user following this [aws guide](http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_SettingUpUser.html#Using_CreateUser_console). Here are the quick steps:
   * Sign in to the [AWS Management Console](https://console.aws.amazon.com/iam/) and open the IAM console.
@@ -21,7 +29,7 @@ As a proof of concept, create a webtask which requests the launches a given mach
   * Enter a user name. Check **Generate an access key**, and choose **Create**.
   * Once created, choose **Show User Security Credentials**. Save the credentials for the webtask. You will not have access to *this* secret access key again after you close.
 
-2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The [spotspec](https://github.com/glennschler/spotspec) README shows a good policy. This is a shorter example:
+2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The [spotspec](https://github.com/glennschler/spotspec#example-aws-iam-policy-to-price-and-launch) README shows a good policy. Here is a shorter example:
   ```json
   {
     "Version": "2012-10-17",
@@ -40,15 +48,9 @@ As a proof of concept, create a webtask which requests the launches a given mach
   }
   ```
 
-4. NPM install command has already installed. Now initialize, if not already.
-  * There are detailed instructions at https://webtask.io/cli.
-  ```
-  npm run wt-init
-  ```
-
-5. To create a webtask token, the webtask.io CLI command ```wt create``` will upload code along with the EC2 credentials. Both are encrypted and stored. This create command will return a url which represents the new webtask token. Even though the code and secrets are cryptographically protected, the webtask token url still needs be well protected.
-  * The EC2 IAM policy specified above is an additional level of protection, since it does not allow actions which might incur AWS cost.
-  * The code uploaded in this example is part of this repository, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** user's IAM credentials.
+5. To create a webtask token, the webtask.io CLI command ```wt create``` uploads code along with the EC2 credentials. Both are encrypted and stored. This create command returns a url which represents the new webtask token. Even though the code and secrets are cryptographically protected, the created webtask token url still needs be well protected.
+  * A well formed EC2 IAM policy, such as specified above, is an additional level of protection to restrict access.
+  * The code uploaded in this example is part of this repository and it's dependencies, so is publicly available for your review. Understand that any code that is used to create a webtask token needs to be trusted with **your** IAM credentials.
 
   ```bash
   # Set to where the webtask code exists. This is a file in this repository
@@ -59,12 +61,16 @@ As a proof of concept, create a webtask which requests the launches a given mach
   ```
 
   * In this JSON string replace the enclosed {secret} in both the accessKeyId and secretAccessKey with the real IAM user's credentials. Plus the optional aws MFA token device serial numbers
+
   ```bash
-  export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}","serialNumber":"{serialNumber:arn....}"}'
+  # Prepare base64 encoded cloud-init user data to launch with the new AWS instances
+  export WT_USERDATA=$(node lib/fnToBase64.js --file node_modules/spotspec/test/userDataDockerAWSLinux.txt)
+
+  export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}","serialNumber":"{serialNumber:arn....}","userData":"'$WT_USERDATA'"}'
   ```
 
   * Call the webtask.io CLI command ```wt create```.
-  * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes.
+  * The optional exp=+10 parameter instructs the webtask token to expire in 10 minutes. Only when evaluating these steps.
   * The above JSON $WT_SECRET is sent using the wt --secret parameter.
 
   ```bash
@@ -76,7 +82,7 @@ As a proof of concept, create a webtask which requests the launches a given mach
 
   ```bash
   # Echo the previous output to view the created webtask token url
-  $ echo $WT_URL
+  echo wt-create.log
   ```
   >
   ```bash
@@ -95,9 +101,9 @@ As a proof of concept, create a webtask which requests the launches a given mach
   export WT_TOKEN=123456
 
   # send the request
-  curl -s $WT_URL --trace-ascii "./out.log" \
+  curl -s $(cat wt-create.log) --trace-ascii "./out.log" \
   -H "Content-Type: application/json" \
-  -X POST -d \ '{"construct":{"keys":{"region":"us-west-1"},"upgrade":{"tokenCode":"'$WT_TOKEN'"}},"attributes":{"type":"m3.large","dryRun":"false","isLogging":"true","ami":"ami-d5ea86b5","keyName":"yourKeyName","securityGroups":[],"fileUserData":"node_modules/spotspec/test/userDataDockerAWSLinux.txt","price":"0.0083","task":"launch"}}' | python -mjson.tool
+  -X POST -d \ '{"construct":{"keys":{"region":"us-west-1"},"upgrade":{"tokenCode":"'$WT_TOKEN'"}},"attributes":{"type":"m3.large","dryRun":"false","isLogging":"true","ami":"ami-d5ea86b5","keyName":"yourKeyName","securityGroups":[],"price":"0.0083","task":"launch"}}' | python -mjson.tool
   ```
   >
   ```bash

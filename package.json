@@ -9,8 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "webpack",
-    "wt-create": "export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)",
-    "wt-init": "wt init"
+    "wt-create": "echo $(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET) > wt-create.log",
+    "wt-init": "wt init",
+    "wt-logs": "wt logs"
   },
   "repository": {
     "type": "git",
