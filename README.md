@@ -2,7 +2,8 @@
 Manage Amazon Elastic Compute Cloud (Amazon EC2) spot instances using webtask.io
 
 ####  * * * warning * * *
-This readme is a work in progress. The quick instructions are below
+This is a work in progress. The quick instructions are below.
+Developed with Node version 5.x. Not yet on Windows. Webpack, and the wt-cli babel option make it possible to run as a webtask.io container
 
 ```
 git clone https://github.com/glennschler/spotspec-wt.git
@@ -12,7 +13,7 @@ npm install
 #### Get Started
 As a proof of concept, create a webtask which launches a given machine instance type in a given region. This will show that AWS Identity and Access Management (IAM) user credentials can be securely stored for use in a webtask. Once the webtask is proven and understood through these steps, a larger goal to fully manage EC2 spot instance will be possible.
 
-1. Webpack the `./lib/wt-spotter.js` to a single file which is required by webtask.io. The resulting `build\wt-spotter-packed.js` is file to be used when calling wt-create.
+1. Webpack the `./lib/wt-spotter.js` to a single file which is required by webtask.io. The resulting `build/wt-spotter-packed.js` is file to be used when calling wt-create.
   ```
   npm run webpack
   ```
@@ -29,13 +30,13 @@ As a proof of concept, create a webtask which launches a given machine instance 
   * Enter a user name. Check **Generate an access key**, and choose **Create**.
   * Once created, choose **Show User Security Credentials**. Save the credentials for the webtask. You will not have access to *this* secret access key again after you close.
 
-2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot price history action. The [spotspec](https://github.com/glennschler/spotspec#example-aws-iam-policy-to-price-and-launch) README shows a good policy. Here is a shorter example:
+2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot request action. The [spotspec](https://github.com/glennschler/spotspec#example-aws-iam-policy-to-price-and-launch) README shows a good policy. Here is a much shorter example:
   ```json
   {
     "Version": "2012-10-17",
     "Statement": [
     {
-      "Action": [ "ec2:DescribeSpotPriceHistory" ],
+      "Action": [ "ec2:RequestSpotInstances" ],
       "Effect": "Allow",
       "Resource": "*",
       "Condition": {
@@ -64,9 +65,12 @@ As a proof of concept, create a webtask which launches a given machine instance 
 
   ```bash
   # Prepare base64 encoded cloud-init user data to launch with the new AWS instances
-  export WT_USERDATA=$(node lib/fnToBase64.js --file node_modules/spotspec/test/userDataDockerAWSLinux.txt)
+  export WT_USERDATA=$(npm run -s encodeFn -- node_modules/spotspec/test/userDataDockerAWSLinux.txt)
 
-  export WT_SECRET='{"accessKeyId":"{secret}","secretAccessKey":"{secret}","serialNumber":"{serialNumber:arn....}","userData":"'$WT_USERDATA'"}'
+  export WT_SECRET=$(npm run -s toJson -- -a=AKIAI2S4EGLOYDVZBXKA \
+  -s=hYzGnShNVdELrsYhoH3N4rp/T4cU060+cHw8Q1Qu \
+  -n=arn:aws:iam::699548893272:mfa/spotTester \
+  -u=$WT_USERDATA)
   ```
 
   * Call the webtask.io CLI command ```wt create```.
@@ -76,8 +80,8 @@ As a proof of concept, create a webtask which launches a given machine instance 
   ```bash
   export WT_OPTS='--exp=+10'
 
-  # This will do this -> export WT_URL=$(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET)
-  npm run wt-create
+  # This will do this -> wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET
+  npm run -s wt-create > wt-create.log
   ```
 
   ```bash

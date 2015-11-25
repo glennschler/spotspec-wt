@@ -6,12 +6,15 @@
   "directories": {
     "test": "test"
   },
+  "config": { "hello": "hi"},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "webpack",
-    "wt-create": "echo $(wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET) > wt-create.log",
+    "encodeFn": "node ./lib/fnToBase64.js --file ",
+    "toJson": "node ./lib/toJson.js",
+    "wt-create": "wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET",
     "wt-init": "wt init",
-    "wt-logs": "wt logs"
+    "wt-logs": "wt logs -v"
   },
   "repository": {
     "type": "git",
@@ -31,7 +34,6 @@
   },
   "homepage": "https://github.com/glennschler/spotspec-wt#readme",
   "dependencies": {
-    "babel": "^6.1.18",
     "spotspec": ">=0.0.6"
   },
   "devDependencies": {
