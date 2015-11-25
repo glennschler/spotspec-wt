@@ -6,7 +6,9 @@
   "directories": {
     "test": "test"
   },
-  "config": { "hello": "hi"},
+  "config": {
+    "hello": "hi"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "webpack",
@@ -34,7 +36,8 @@
   },
   "homepage": "https://github.com/glennschler/spotspec-wt#readme",
   "dependencies": {
-    "spotspec": ">=0.0.6"
+    "spotspec": ">=0.0.6",
+    "yargs": "^3.30.0"
   },
   "devDependencies": {
     "webpack": "^1.12.6",
