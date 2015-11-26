@@ -21,9 +21,9 @@ function WebTaskRequestor () {
         // 'AvailabilityZone': 'us-west-2b' }
       },
       'count': 1,
-      'keyName': 'ec2SFO',
-      'securityGroups': ['Fibertel NQN ssh', 'Fibertel NQN vpn', 'Speedy Zp ssh', 'Speedy Zp vpn'],
-      'ami': 'ami-d5ea86b5', // PDX='ami-f0091d91',
+      'keyName': 'ec2Keywest-1',
+      'securityGroups': ['EU ssh', 'EU vpn', 'UK ssh', 'UK vpn'],
+      'ami': 'ami-d5ea86b5',
       'type': 'm3.medium',
       'dryRun': 'false',
       'isLogging': 'true',
