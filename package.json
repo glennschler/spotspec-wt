@@ -12,8 +12,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "webpack",
-    "encodeFn": "node ./lib/fnToBase64.js --file ",
-    "toJson": "node ./lib/toJson.js",
+    "encodeFn": "node ./lib/tools/fnToBase64.js --file ",
+    "toJson": "node ./lib/tools/toSecretsJson.js",
     "wt-create": "wt create $WT_CODE $WT_OPTS --secret wtData=$WT_SECRET",
     "wt-init": "wt init",
     "wt-logs": "wt logs -v"

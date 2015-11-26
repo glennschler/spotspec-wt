@@ -30,7 +30,7 @@ As a proof of concept, create a webtask which launches a given machine instance 
   * Enter a user name. Check **Generate an access key**, and choose **Create**.
   * Once created, choose **Show User Security Credentials**. Save the credentials for the webtask. You will not have access to *this* secret access key again after you close.
 
-2. Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot request action. The [spotspec](https://github.com/glennschler/spotspec#example-aws-iam-policy-to-price-and-launch) README shows a good policy. Here is a much shorter example:
+  * Attach a policy to limit the user permissions to specific AWS resources. For more information, see [Attaching Managed Policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_using-managed.html#attach-managed-policy-console). Assign a policy which only allows the spot request action. The [spotspec](https://github.com/glennschler/spotspec#example-aws-iam-policy-to-price-and-launch) README shows a good policy. Here is a much shorter example:
   ```json
   {
     "Version": "2012-10-17",
@@ -67,10 +67,9 @@ As a proof of concept, create a webtask which launches a given machine instance 
   # Prepare base64 encoded cloud-init user data to launch with the new AWS instances
   export WT_USERDATA=$(npm run -s encodeFn -- node_modules/spotspec/test/userDataDockerAWSLinux.txt)
 
-  export WT_SECRET=$(npm run -s toJson -- -a=<<secret.AccessKeyId>> \
-  -s=<<secret.secretAccessKey>> \
-  -n=<<secret.serialNumber>> \
-  -u=$WT_USERDATA)
+  export WT_SECRET=$(npm run -s toJson -- --accessKeyId==<<secret>> \
+  --secretAccessKey=<<secret>> --serialNumber==<<secret>> \
+  --userData=$WT_USERDATA)
   ```
 
   * Call the webtask.io CLI command ```wt create```.
@@ -88,31 +87,30 @@ As a proof of concept, create a webtask which launches a given machine instance 
   # Echo the previous output to view the created webtask token url
   echo wt-create.log
   ```
-  >
-  ```bash
-  https://webtask.it.auth0.com/api/run/{container}/{jt-name}?webtask_no_cache=1
-  ```
+  >```bash
+    https://webtask.it.auth0.com/api/run/{container}/{jt-name}?webtask_no_cache=1
+    ```
 
-6. Now the webtask request is available to execute remotely as a microservice.
+6. Now the webtask request is available to execute remotely, and repeatedly. This example shows using the `CURL` command line. Another better example is an IFTTT recipe which makes a similar HTTP request, though instead is triggered by an incoming SMS or email.
 
-  * Replace the post data JSON arguments "region" and "type" as needed.
+  * Replace the post data JSON arguments "region", "type", "price", etc... as needed.
   * Request the $WT_URL which was created during the previous ```wt create``` step.
   * To format the output, optionally pipe the output to a python command as demonstrated here.
 
-  ```bash
+  ```json
 
   # Every minute the token code changes
   export WT_TOKEN=123456
 
-  # send the request
+  # send the LAUNCH task request
   curl -s $(cat wt-create.log) --trace-ascii "./out.log" \
   -H "Content-Type: application/json" \
-  -X POST -d \ '{"construct":{"keys":{"region":"us-west-1"},"upgrade":{"tokenCode":"'$WT_TOKEN'"}},"attributes":{"type":"m3.large","dryRun":"false","isLogging":"true","ami":"ami-d5ea86b5","keyName":"yourKeyName","securityGroups":[],"price":"0.0083","task":"launch"}}' | python -mjson.tool
+  -X POST -d \ '{"construct":{"keys":{"region":"us-west-1"},"upgrade":{"tokenCode":"'$WT_TOKEN'"}},"attributes":{"type":"m3.large","dryRun":"false","isLogging":"true","ami":"ami-d5ea86b5","keyName":"yourKeyName","securityGroups":[],"price":"0.0083","task":"launch"}}' \
+  | python -mjson.tool
   ```
-  >
-  ```bash
+  >```json
     {
-      "code": 400,
-      "details": "Error: Failed to initialize: {\"message\":\"MultiFactorAuthentication failed with invalid MFA one time pass code......
-  }
-  ```
+        "code": 400,
+        "details": "Error: Failed to initialize: {\"message\":\"MultiFactorAuthentication failed with invalid MFA one time pass code......
+    }
+    ```
