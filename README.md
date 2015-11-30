@@ -67,8 +67,8 @@ As a proof of concept, create a webtask which launches a given machine instance 
   # Prepare base64 encoded cloud-init user data to launch with the new AWS instances
   export WT_USERDATA=$(npm run -s encodeFn -- node_modules/spotspec/test/userDataDockerAWSLinux.txt)
 
-  export WT_SECRET=$(npm run -s toJson -- --accessKeyId==<<secret>> \
-  --secretAccessKey=<<secret>> --serialNumber==<<secret>> \
+  export WT_SECRET=$(npm run -s secretsToJson -- --accessKeyId=<<secret>> \
+  --secretAccessKey=<<secret>> --serialNumber=<<secret>> \
   --userData=$WT_USERDATA)
   ```
 
